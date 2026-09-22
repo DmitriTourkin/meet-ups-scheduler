@@ -1,0 +1,37 @@
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: #171717;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn-dark:hover {
+  background: #383838;
+}
+
+.btn-dark:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-dark:disabled:hover {
+  background: #171717;
+}
+
+.btn-dark-active {
+  border-color: #ffffff;
+}
