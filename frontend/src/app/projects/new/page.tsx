@@ -17,8 +17,7 @@ const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const [title, setTitle] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [searchRangeStart, setSearchRangeStart] = useState(DEFAULT_START);
@@ -28,11 +27,8 @@ export default function NewProjectPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api
-      .get<User>("/auth/me")
-      .then(setCurrentUser)
-      .catch(() => router.replace("/login"));
-    api.get<User[]>("/users").then(setUsers).catch(() => {});
+    api.get<User>("/auth/me").catch(() => router.replace("/login"));
+    api.get<User[]>("/friends").then(setFriends).catch(() => {});
   }, [router]);
 
   function toggleMember(userId: string) {
@@ -75,8 +71,6 @@ export default function NewProjectPage() {
       setSubmitting(false);
     }
   }
-
-  const otherUsers = users.filter((user) => user.id !== currentUser?.id);
 
   return (
     <div className={styles.page}>
@@ -143,8 +137,8 @@ export default function NewProjectPage() {
         <div className={styles.field}>
           <span className={styles.label}>Участники</span>
           <div className={styles.memberList}>
-            {otherUsers.length === 0 && <span>Других пользователей пока нет</span>}
-            {otherUsers.map((user) => (
+            {friends.length === 0 && <span>Друзей пока нет</span>}
+            {friends.map((user) => (
               <label key={user.id} className={styles.memberOption}>
                 <input
                   type="checkbox"

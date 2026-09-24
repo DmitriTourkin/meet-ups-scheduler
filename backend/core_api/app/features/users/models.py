@@ -17,4 +17,6 @@ class User(Base):
     timezone: Mapped[str] = mapped_column(String, nullable=False)
     working_hours_start: Mapped[time] = mapped_column(nullable=False)
     working_hours_end: Mapped[time] = mapped_column(nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    nickname: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False)

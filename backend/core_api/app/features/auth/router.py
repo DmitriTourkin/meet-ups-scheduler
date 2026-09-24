@@ -1,51 +1,57 @@
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.features.auth import crud
-from app.features.auth.dependencies import (
-    COOKIE_SAMESITE,
-    COOKIE_SECURE,
-    SESSION_COOKIE_NAME,
-    get_current_user,
-)
-from app.features.auth.schemas import LoginRequest
+from app.features.auth.dependencies import get_current_user
+from app.features.auth.schemas import ClaimRequest, CompleteSetupRequest, LoginRequest, TokenResponse
+from app.features.auth.security import create_access_token, hash_password, verify_password
 from app.features.users.models import User
 from app.features.users.schemas import UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
 
-
-@router.post("/login", response_model=UserOut)
-async def login(
-    data: LoginRequest, response: Response, session: AsyncSession = Depends(get_session)
-):
+@router.post("/claim", response_model=TokenResponse)
+async def claim(data: ClaimRequest, session: AsyncSession = Depends(get_session)):
     user = await session.get(User, data.user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    token = await crud.create_session(session, user.id)
-    response.set_cookie(
-        key=SESSION_COOKIE_NAME,
-        value=token,
-        httponly=True,
-        samesite=COOKIE_SAMESITE,
-        secure=COOKIE_SECURE,
-        max_age=SESSION_MAX_AGE_SECONDS,
-    )
-    return user
+    if user.nickname is not None:
+        raise HTTPException(
+            status_code=400, detail="Этот аккаунт уже настроен, войдите по нику и паролю"
+        )
+    token = create_access_token(str(user.id))
+    return TokenResponse(access_token=token, user=UserOut.model_validate(user))
 
 
-@router.post("/logout", status_code=204)
-async def logout(
-    response: Response,
-    session_id: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
+@router.post("/complete-setup", response_model=TokenResponse)
+async def complete_setup(
+    data: CompleteSetupRequest,
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    if session_id is not None:
-        await crud.delete_session(session, session_id)
-    response.delete_cookie(SESSION_COOKIE_NAME)
+    existing = await session.execute(select(User).where(User.nickname == data.nickname))
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=400, detail="Этот никнейм уже занят")
+    current_user.nickname = data.nickname
+    current_user.password_hash = hash_password(data.password)
+    await session.commit()
+    await session.refresh(current_user)
+    token = create_access_token(str(current_user.id))
+    return TokenResponse(access_token=token, user=UserOut.model_validate(current_user))
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login(data: LoginRequest, session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select(User).where(User.nickname == data.nickname))
+    user = result.scalar_one_or_none()
+    if user is None or user.password_hash is None or not verify_password(
+        data.password, user.password_hash
+    ):
+        raise HTTPException(status_code=401, detail="Неверный никнейм или пароль")
+    token = create_access_token(str(user.id))
+    return TokenResponse(access_token=token, user=UserOut.model_validate(user))
 
 
 @router.get("/me", response_model=UserOut)

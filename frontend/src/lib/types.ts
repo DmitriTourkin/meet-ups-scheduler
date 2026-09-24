@@ -5,6 +5,7 @@ export interface User {
   timezone: string;
   working_hours_start: string;
   working_hours_end: string;
+  nickname: string | null;
 }
 
 export type ProjectStatus = "pending" | "confirmed" | "cancelled" | "no_slot_found";

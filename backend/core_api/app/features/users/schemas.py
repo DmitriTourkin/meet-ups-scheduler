@@ -30,3 +30,4 @@ class UserOut(BaseModel):
     timezone: str
     working_hours_start: time
     working_hours_end: time
+    nickname: str | None

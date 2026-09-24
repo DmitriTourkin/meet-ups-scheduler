@@ -29,7 +29,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .input {
@@ -39,7 +39,6 @@
   background: var(--background);
   color: var(--foreground);
   font: inherit;
-  letter-spacing: 0.05em;
 }
 
 .error {

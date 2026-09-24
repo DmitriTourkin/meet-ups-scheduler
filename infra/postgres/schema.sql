@@ -13,6 +13,8 @@ CREATE TABLE users (
     timezone TEXT NOT NULL,
     working_hours_start TIME NOT NULL DEFAULT '09:00',
     working_hours_end TIME NOT NULL DEFAULT '18:00',
+    password_hash TEXT,
+    nickname TEXT UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT working_hours_valid CHECK (working_hours_start < working_hours_end)
 );
@@ -86,10 +88,9 @@ CREATE TABLE notifications (
 );
 CREATE INDEX idx_notifications_user_unread ON notifications (user_id) WHERE read_at IS NULL;
 
-CREATE TABLE sessions (
-    token_hash TEXT PRIMARY KEY,
+CREATE TABLE friendships (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    expires_at TIMESTAMPTZ NOT NULL
+    PRIMARY KEY (user_id, friend_id)
 );
-CREATE INDEX idx_sessions_user ON sessions (user_id);
