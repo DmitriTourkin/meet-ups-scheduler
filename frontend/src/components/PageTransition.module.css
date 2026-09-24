@@ -1,0 +1,36 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  top: 0;
+  opacity: 1;
+  transition: opacity 0.2s ease, top 0.2s ease;
+}
+
+.exit {
+  opacity: 0;
+  top: 10px;
+}
+
+.enter {
+  opacity: 0;
+  top: -10px;
+  transition: none;
+}
+
+.visible {
+  opacity: 1;
+  top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper {
+    transition: none;
+  }
+
+  .exit,
+  .enter {
+    opacity: 1;
+    top: 0;
+  }
+}

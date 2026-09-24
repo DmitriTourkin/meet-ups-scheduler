@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { InlineScript } from "@/components/InlineScript";
+import { PageTransition } from "@/components/PageTransition";
 import "./globals.css";
 import "@/styles/animations.css";
 import "@/styles/buttons.css";
@@ -43,7 +44,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <InlineScript html={THEME_INIT_SCRIPT} />
       </head>
-      <body>{children}</body>
+      <body>
+        <PageTransition>{children}</PageTransition>
+      </body>
     </html>
   );
 }
