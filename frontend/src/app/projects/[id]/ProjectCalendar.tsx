@@ -209,9 +209,12 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
   }, [entries]);
 
   useEffect(() => {
-    if (headerRef.current) {
-      setHeaderHeight(headerRef.current.offsetHeight);
-    }
+    const el = headerRef.current;
+    if (!el) return;
+    setHeaderHeight(el.offsetHeight);
+    const observer = new ResizeObserver(() => setHeaderHeight(el.offsetHeight));
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [project]);
 
   useEffect(() => {
