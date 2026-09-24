@@ -25,12 +25,14 @@ export default function Home() {
     router.replace("/login");
   }
 
-  if (loading) {
-    return null;
-  }
-
-  if (!user) {
-    return null;
+  if (loading || !user) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <p className={styles.meta}>Загрузка…</p>
+        </div>
+      </div>
+    );
   }
 
   return (
