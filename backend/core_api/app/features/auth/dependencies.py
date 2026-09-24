@@ -9,6 +9,7 @@ from app.features.users.models import User
 
 SESSION_COOKIE_NAME = "session_id"
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
+COOKIE_SAMESITE = "none" if COOKIE_SECURE else "lax"
 
 
 async def get_current_user(

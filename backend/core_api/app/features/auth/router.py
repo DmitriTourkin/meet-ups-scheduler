@@ -3,7 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.features.auth import crud
-from app.features.auth.dependencies import COOKIE_SECURE, SESSION_COOKIE_NAME, get_current_user
+from app.features.auth.dependencies import (
+    COOKIE_SAMESITE,
+    COOKIE_SECURE,
+    SESSION_COOKIE_NAME,
+    get_current_user,
+)
 from app.features.auth.schemas import LoginRequest
 from app.features.users.models import User
 from app.features.users.schemas import UserOut
@@ -25,7 +30,7 @@ async def login(
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
+        samesite=COOKIE_SAMESITE,
         secure=COOKIE_SECURE,
         max_age=SESSION_MAX_AGE_SECONDS,
     )
