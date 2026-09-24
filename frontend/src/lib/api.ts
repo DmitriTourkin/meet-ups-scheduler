@@ -9,12 +9,19 @@ export class ApiError extends Error {
   }
 }
 
+function getAccessCode(): string | undefined {
+  const match = document.cookie.match(/(?:^|; )access_code=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const accessCode = getAccessCode();
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(accessCode ? { "X-Access-Code": accessCode } : {}),
       ...init?.headers,
     },
   });
