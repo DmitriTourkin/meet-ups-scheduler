@@ -7,6 +7,28 @@
   gap: 20px;
 }
 
+.viewFade {
+  transition: opacity 0.2s ease;
+}
+
+.viewFadeDelayed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: opacity 0.2s ease 0.12s;
+}
+
+.viewFadeHidden {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewFade,
+  .viewFadeDelayed {
+    transition: none;
+  }
+}
+
 .header {
   position: fixed;
   top: 16px;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -160,43 +160,39 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
   const currentUserRef = useRef<User | null>(null);
   const entriesRef = useRef<ProjectAvailabilityEntry[]>([]);
   const headerRef = useRef<HTMLDivElement>(null);
-  const pageRef = useRef<HTMLDivElement>(null);
-  const pageWidthBeforeSwitch = useRef<number | null>(null);
   const isFirstBrightRender = useRef(true);
   const mountTimeRef = useRef<number | null>(null);
+  const pendingViewMode = useRef<ViewMode | null>(null);
+
+  const [viewFadePhase, setViewFadePhase] = useState<"visible" | "exit" | "enter">("visible");
 
   const effectiveBright = theme === "light" ? true : brightColors;
 
   function changeViewMode(mode: ViewMode) {
-    if (pageRef.current) {
-      pageWidthBeforeSwitch.current = pageRef.current.getBoundingClientRect().width;
-    }
-    setViewMode(mode);
+    if (mode === viewMode) return;
+    pendingViewMode.current = mode;
+    setViewFadePhase("exit");
   }
 
-  useLayoutEffect(() => {
-    const el = pageRef.current;
-    const startWidth = pageWidthBeforeSwitch.current;
-    pageWidthBeforeSwitch.current = null;
-    if (!el || startWidth === null) return;
+  useEffect(() => {
+    if (viewFadePhase !== "exit") return;
+    const timeout = setTimeout(() => {
+      if (pendingViewMode.current !== null) {
+        setViewMode(pendingViewMode.current);
+        pendingViewMode.current = null;
+      }
+      setViewFadePhase("enter");
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [viewFadePhase]);
 
-    const naturalWidth = el.getBoundingClientRect().width;
-    if (naturalWidth === startWidth) return;
+  useEffect(() => {
+    if (viewFadePhase !== "enter") return;
+    const raf = requestAnimationFrame(() => setViewFadePhase("visible"));
+    return () => cancelAnimationFrame(raf);
+  }, [viewFadePhase]);
 
-    el.style.transition = "none";
-    el.style.width = `${startWidth}px`;
-    void el.offsetWidth;
-    el.style.transition = "width 0.3s ease";
-    el.style.width = `${naturalWidth}px`;
-
-    function handleTransitionEnd(e: TransitionEvent) {
-      if (e.propertyName !== "width") return;
-      el!.style.transition = "";
-      el!.style.width = "";
-    }
-    el.addEventListener("transitionend", handleTransitionEnd);
-    return () => el.removeEventListener("transitionend", handleTransitionEnd);
-  }, [viewMode]);
+  const viewFadeHidden = viewFadePhase !== "visible";
 
   useEffect(() => {
     projectRef.current = project;
@@ -451,7 +447,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
   });
 
   return (
-    <div className={styles.page} ref={pageRef}>
+    <div className={styles.page}>
       <div style={{ height: headerHeight }} aria-hidden="true" />
       <div
         ref={headerRef}
@@ -482,7 +478,10 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
         </div>
       </div>
 
-      <div className="stagger-in" style={{ ...staggerStyle(1), display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div
+        className={`${styles.viewFade} ${viewFadeHidden ? styles.viewFadeHidden : ""}`}
+        style={{ ...staggerStyle(1), display: "flex", gap: 8, flexWrap: "wrap" }}
+      >
         <button
           type="button"
           className={`${styles.backButton} ${viewMode === "blocks" ? styles.paintOptionActive : ""}`}
@@ -521,6 +520,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
         )}
       </div>
 
+      <div className={`${styles.viewFadeDelayed} ${viewFadeHidden ? styles.viewFadeHidden : ""}`}>
       {viewMode === "hours" && restrictToWorkingHours && (
         <p className={styles.hint}>Показаны только часы в пределах рабочего времени участников.</p>
       )}
@@ -860,6 +860,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
             вне рабочих часов
           </span>
         )}
+      </div>
       </div>
     </div>
   );
