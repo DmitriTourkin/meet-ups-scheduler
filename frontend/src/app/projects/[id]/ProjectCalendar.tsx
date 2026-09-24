@@ -163,6 +163,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
   const pageRef = useRef<HTMLDivElement>(null);
   const pageWidthBeforeSwitch = useRef<number | null>(null);
   const isFirstBrightRender = useRef(true);
+  const mountTimeRef = useRef<number | null>(null);
 
   const effectiveBright = theme === "light" ? true : brightColors;
 
@@ -223,14 +224,19 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
   }, []);
 
   useEffect(() => {
+    mountTimeRef.current = Date.now();
+  }, []);
+
+  useEffect(() => {
     if (isFirstBrightRender.current) {
       isFirstBrightRender.current = false;
       return;
     }
+    if (mountTimeRef.current === null || Date.now() - mountTimeRef.current < 300) return;
     setToggleAnimating(true);
     const timeout = setTimeout(() => setToggleAnimating(false), TOGGLE_ANIMATION_MS);
     return () => clearTimeout(timeout);
-  }, [brightColors]);
+  }, [brightColors, theme]);
 
   const loadEntries = useCallback(async () => {
     const data = await api.get<ProjectAvailabilityEntry[]>(`/projects/${id}/availability`);
@@ -579,7 +585,6 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                         ? dayStatus(entries, member.user_id, day, bounds.start, bounds.end)
                         : "free";
                       const label = formatDayHeader(day, day.getDate() === 1);
-                      const colorDelay = { transitionDelay: `${(memberIndex * weeks.length + weekIndex) * 30}ms` };
                       if (isYou) {
                         const key = dayKey(day);
                         return (
@@ -591,7 +596,6 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                             }}
                             type="button"
                             className={`${monthCellClassName(status, effectiveBright, toggleAnimating)} ${styles.cellEditable}`}
-                            style={colorDelay}
                             onMouseDown={() => startDayPaint(member.user_id, day)}
                             onMouseEnter={() => extendDayPaint(member.user_id, day)}
                             onDragStart={(e) => e.preventDefault()}
@@ -606,7 +610,6 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                         <div
                           key={dayIndex}
                           className={monthCellClassName(status, effectiveBright, toggleAnimating)}
-                          style={colorDelay}
                         >
                           {label}
                         </div>
@@ -758,12 +761,9 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                     )),
                   )}
 
-                  {sortedMembers.map((member, memberIndex) => {
+                  {sortedMembers.map((member) => {
                     const user = usersById.get(member.user_id);
                     const isYou = member.user_id === currentUser.id;
-                    const colorDelay = {
-                      transitionDelay: `${(weekIndex * sortedMembers.length + memberIndex) * 25}ms`,
-                    };
                     return (
                       <div key={member.user_id} style={{ display: "contents" }}>
                         <div className={`${styles.memberLabel} ${isYou ? styles.memberLabelYou : ""}`}>
@@ -796,7 +796,6 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                                   }}
                                   type="button"
                                   className={`${className} ${styles.cellEditable}`}
-                                  style={colorDelay}
                                   onMouseDown={() => startHourPaint(member.user_id, day, hour)}
                                   onMouseEnter={() => extendHourPaint(member.user_id, day, hour)}
                                   onDragStart={(e) => e.preventDefault()}
@@ -804,7 +803,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
                                 />
                               );
                             }
-                            return <div key={key} className={className} style={colorDelay} />;
+                            return <div key={key} className={className} />;
                           }),
                         )}
                       </div>
