@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { clearToken } from "@/lib/auth";
+import AccountMenu from "@/components/AccountMenu";
 import type { User } from "@/lib/types";
 import styles from "./page.module.css";
 
@@ -20,8 +22,8 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  async function handleLogout() {
-    await api.post("/auth/logout").catch(() => {});
+  function handleLogout() {
+    clearToken();
     router.replace("/login");
   }
 
@@ -37,6 +39,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <AccountMenu />
       <div className={styles.card}>
         <h1 className={styles.greeting}>Привет, {user.name}</h1>
         <p className={styles.meta}>
