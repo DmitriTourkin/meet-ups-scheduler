@@ -1,7 +1,5 @@
 .root {
-  position: fixed;
-  top: 16px;
-  right: 16px;
+  position: relative;
   z-index: 30;
 }
 

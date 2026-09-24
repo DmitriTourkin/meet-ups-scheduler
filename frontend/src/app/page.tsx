@@ -39,16 +39,18 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <AccountMenu />
       <div className={styles.card}>
         <h1 className={styles.greeting}>Привет, {user.name}</h1>
         <p className={styles.meta}>
           {user.email} · рабочие часы {user.working_hours_start}–{user.working_hours_end} (
           {user.timezone})
         </p>
-        <Link href="/projects" className={`${styles.logoutButton} btn-dark`}>
-          Мои проекты
-        </Link>
+        <div className={styles.actionsRow}>
+          <Link href="/projects" className={`${styles.logoutButton} btn-dark`}>
+            Мои проекты
+          </Link>
+          <AccountMenu />
+        </div>
         <button type="button" className={`${styles.logoutButton} btn-dark`} onClick={handleLogout}>
           Выйти
         </button>

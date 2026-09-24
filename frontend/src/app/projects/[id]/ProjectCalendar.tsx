@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
+import AccountMenu from "@/components/AccountMenu";
 import { api, ApiError } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 import type {
@@ -475,6 +476,7 @@ export default function ProjectCalendar({ id, restrictToWorkingHours }: ProjectC
             )}
           </div>
           <ThemeToggle />
+          <AccountMenu />
         </div>
       </div>
 

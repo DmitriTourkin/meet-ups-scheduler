@@ -28,3 +28,13 @@
 .logoutButton {
   margin-top: 8px;
 }
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionsRow .logoutButton {
+  margin-top: 0;
+}
