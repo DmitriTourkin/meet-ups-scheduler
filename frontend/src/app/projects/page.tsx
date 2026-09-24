@@ -47,8 +47,13 @@ export default function ProjectsPage() {
       )}
 
       <div className={styles.list}>
-        {projects?.map((project) => (
-          <Link key={project.id} href={`/projects/${project.id}`} className={styles.item}>
+        {projects?.map((project, index) => (
+          <Link
+            key={project.id}
+            href={`/projects/${project.id}`}
+            className={styles.item}
+            style={{ animationDelay: `${index * 40}ms` }}
+          >
             <span className={styles.itemTitle}>{project.title}</span>
             <span className={styles.itemMeta}>
               {project.search_range_start} — {project.search_range_end} ·{" "}
